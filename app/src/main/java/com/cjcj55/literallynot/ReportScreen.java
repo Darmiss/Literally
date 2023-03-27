@@ -9,11 +9,11 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import com.cjcj55.literallynot.databinding.FragmentSecondBinding;
+import com.cjcj55.literallynot.databinding.MainscreenuiBinding;
+import com.cjcj55.literallynot.databinding.ReportscreenuiBinding;
 
-public class SecondFragment extends Fragment {
-
-    private FragmentSecondBinding binding;
+public class ReportScreen  extends Fragment {
+    private ReportscreenuiBinding binding;
 
     @Override
     public View onCreateView(
@@ -21,27 +21,27 @@ public class SecondFragment extends Fragment {
             Bundle savedInstanceState
     ) {
 
-        binding = FragmentSecondBinding.inflate(inflater, container, false);
+        binding = ReportscreenuiBinding.inflate(inflater, container, false);
         return binding.getRoot();
-
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.buttonSecond.setOnClickListener(new View.OnClickListener() {
+
+        binding.reportBckBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                NavHostFragment.findNavController(SecondFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_FirstFragment);
+                NavHostFragment.findNavController(ReportScreen.this)
+                        .navigate(R.id.action_ReportScreen_to_MainScreen);
             }
         });
+
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
-    }
+
+
+
+
 
 }

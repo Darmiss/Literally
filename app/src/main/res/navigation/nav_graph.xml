@@ -3,26 +3,55 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
+    app:startDestination="@id/LoginScreen">
+
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.cjcj55.literallynot.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
+        android:id="@+id/LoginScreen"
+        android:name="com.cjcj55.literallynot.LoginScreen"
+        android:label="Login"
+        tools:layout="@layout/loginscreenui">
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_LoginScreen_to_AccountCreationScreen"
+            app:destination="@id/AccountCreationScreen" />
+        <action
+            android:id="@+id/action_LoginScreen_to_MainScreen"
+            app:destination="@id/MainScreen" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.cjcj55.literallynot.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/MainScreen"
+        android:name="com.cjcj55.literallynot.MainScreen"
+        android:label="Main Screen"
+        tools:layout="@layout/mainscreenui">
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_SecondFragment_to_LoginScreen"
+            app:destination="@id/LoginScreen" />
+        <action
+            android:id="@+id/action_MainScreen_to_ReportScreen"
+            app:destination="@id/ReportScreen" />
     </fragment>
+
+    <fragment
+        android:id="@+id/AccountCreationScreen"
+        android:name="com.cjcj55.literallynot.AccountCreationScreen"
+        android:label="Account Creation"
+        tools:layout="@layout/accountcreationscreenui">
+        <action
+            android:id="@+id/action_AccountCreationScreen_to_LoginScreen"
+            app:destination="@id/LoginScreen" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/ReportScreen"
+        android:name="com.cjcj55.literallynot.ReportScreen"
+        android:label="Reports"
+        tools:layout="@layout/reportscreenui">
+        <action
+            android:id="@+id/action_ReportScreen_to_MainScreen"
+            app:destination="@id/MainScreen" />
+    </fragment>
+
+    <action
+        android:id="@+id/action_logout_to_LoginScreen"
+        app:destination="@id/LoginScreen" />
 </navigation>
