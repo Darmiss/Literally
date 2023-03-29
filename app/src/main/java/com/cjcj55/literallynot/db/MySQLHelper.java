@@ -12,28 +12,40 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.HttpHeaderParser;
+import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.cjcj55.literallynot.R;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.msebera.android.httpclient.Header;
+
 public class MySQLHelper {
     private static final String API_URL = "http://18.223.125.204/";
+    private static final String TAG = "MySQLHelper";
+
     public static void registerAccount(String username, String password, String email, String firstName, String lastName, Context context) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 API_URL + "register.php",
@@ -160,55 +172,109 @@ public class MySQLHelper {
         queue.add(stringRequest);
     }
 
-    public static void sendAudioFile(String userId, Uri audioFileUri, Context context, final AudioUploadCallback audioUploadCallback) {
-        File audioFile = new File(audioFileUri.getPath());
-        HttpEntity httpEntity = MultipartEntityBuilder.create()
-                .addBinaryBody("audio_file", audioFile, ContentType.create("audio/mpeg"), audioFile.getName())
-                .build();
+    public static void writeAudioFileForUser(Context context, File audioFile) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE);
+        int userId = sharedPreferences.getInt("user_id", -1);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.POST,
-                API_URL + "audio-upload.php",
-                new Response.Listener<String>() {
+        // Create AsyncHttpClient
+        AsyncHttpClient client = new AsyncHttpClient();
+
+        // Create RequestParams
+        RequestParams params = new RequestParams();
+        try {
+            params.put("audio_file", audioFile);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        params.put("user_id", String.valueOf(userId));
+
+        // Send multipart request
+        String url = API_URL + "write-audio-file.php";
+        client.post(url, params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                // Handle successful response
+                String responseString = new String(responseBody);
+                Log.d("UPLOAD", "Response: " + responseString);
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                // Handle error response
+                String errorString = error.getMessage();
+                Log.e("UPLOAD", "Error: " + errorString);
+            }
+        });
+    }
+
+
+    public static void readAudioFilesForUser(Context context, Response.Listener<AudioFile[]> responseListener, Response.ErrorListener errorListener) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE);
+        int userId = sharedPreferences.getInt("user_id", -1);
+
+        // Create request URL with user ID as a parameter
+        String url = API_URL + "read-audio-files.php?user_id=" + userId;
+
+        // Create JsonRequest using Volley
+        JsonRequest<JSONArray> jsonRequest = new JsonRequest<JSONArray>(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONArray>() {
                     @Override
-                    public void onResponse(String response) {
-                        if (response.equals("1")) {
-                            audioUploadCallback.onSuccess();
-                        } else {
-                            audioUploadCallback.onFailure();
+                    public void onResponse(JSONArray response) {
+                        try {
+                            ArrayList<AudioFile> audioFilesList = new ArrayList<>();
+                            for (int i = 0; i < response.length(); i++) {
+                                JSONObject audioFileObject = response.getJSONObject(i);
+                                int audioFileId = audioFileObject.getInt("id");
+                                int audioFileUserId = audioFileObject.getInt("user_id");
+                                String dateTime = audioFileObject.getString("time_said");
+                                String audioFilePath = audioFileObject.getString("file_path");
+                                AudioFile audioFile = new AudioFile(audioFileId, audioFileUserId, dateTime, audioFilePath);
+                                audioFilesList.add(audioFile);
+                            }
+                            AudioFile[] audioFilesArray = new AudioFile[audioFilesList.size()];
+                            audioFilesList.toArray(audioFilesArray);
+                            responseListener.onResponse(audioFilesArray);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
                     }
-                }, new Response.ErrorListener() {
+                },
+                errorListener
+        ) {
             @Override
-            public void onErrorResponse(VolleyError error) {
-                audioUploadCallback.onFailure();
-            }
-        }) {
-            private final HttpEntity mHttpEntity = httpEntity;
-
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<>();
-                params.put("user_id", userId);
-                return params;
-            }
-
-            @Override
-            public String getBodyContentType() {
-                return mHttpEntity.getContentType().getValue();
-            }
-
-            @Override
-            public byte[] getBody() throws AuthFailureError {
+            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+                String jsonString;
                 try {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    mHttpEntity.writeTo(bos);
-                    return bos.toByteArray();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    jsonString = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                } catch (UnsupportedEncodingException e) {
+                    jsonString = new String(response.data);
+                }
+                try {
+                    return Response.success(new JSONArray(jsonString), HttpHeaderParser.parseCacheHeaders(response));
+                } catch (JSONException e) {
+                    return Response.error(new ParseError(e));
                 }
             }
         };
 
+        // Add request to request queue
+        Volley.newRequestQueue(context).add(jsonRequest);
+    }
+
+
+    public static void getAllUsers(Context context, Response.Listener<String> responseListener) {
+        StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                API_URL + "get-all-users.php",
+                responseListener,
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(context, "Error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
         RequestQueue queue = Volley.newRequestQueue(context);
         queue.add(stringRequest);
     }
