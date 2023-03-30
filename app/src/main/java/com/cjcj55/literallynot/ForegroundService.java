@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -149,14 +150,14 @@ public class ForegroundService extends Service implements Runnable{
     //In order to get context for file location was required to
     public class AudioRecorder{
 
-        private MediaRecorder recorder;
+        private AudioRecord recorder;
         private ByteArrayOutputStream output;
         private Handler handler;
         private Runnable callback;
         //Constructor  for the Audio Recorder.  Thank you sleep deprivation
         public AudioRecorder() {
             //Initialize the AudioRecorder variables
-            recorder = new MediaRecorder();
+            recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, );
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
