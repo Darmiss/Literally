@@ -17,6 +17,7 @@ import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import java.util.concurrent.TimeUnit;
 
 import androidx.core.app.NotificationCompat;
 
@@ -54,6 +55,7 @@ public class ForegroundService extends Service implements Runnable{
         spIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         spIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         spIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
+
         //Initializes the MediaRecorder for audio recording
         PackageManager m = getPackageManager();
         String s = getPackageName();
@@ -67,13 +69,14 @@ public class ForegroundService extends Service implements Runnable{
         System.out.println(s);
         System.out.println(m);
         System.out.println(p);
+
+        AudioRecorder recorder = new AudioRecorder();
         try {
-            AudioRecorder recorder = new AudioRecorder();
             recorder.startRecording();
-            //recorder.stopRecording();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        recorder.stopRecording();
         //speechRecognizer.startListening(spIntent);
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -151,7 +154,7 @@ public class ForegroundService extends Service implements Runnable{
         private Handler handler;
         private Runnable callback;
         //Constructor  for the Audio Recorder.  Thank you sleep deprivation
-        public AudioRecorder() throws IOException{
+        public AudioRecorder() {
             //Initialize the AudioRecorder variables
             recorder = new MediaRecorder();
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -180,22 +183,19 @@ public class ForegroundService extends Service implements Runnable{
                     byte[] recordBytes = output.toByteArray();
                     String recordedText = new String(recordBytes, StandardCharsets.UTF_8);
                     System.out.println(recordedText);
-                    handler.postDelayed(this, 5000);
+                    handler.postDelayed(this, 50000);
                 }
             };
-            handler.postDelayed(callback, 5000);
+            handler.postDelayed(callback, 50000);
 
         }
         public void stopRecording(){
             if(null != recorder){
-                try{
                     recorder.stop();
-                    recorder.reset();
                     recorder.release();
+                    recorder = null;
                     handler.removeCallbacks(callback);
-                } catch (RuntimeException e){
-                    System.out.println("Wow its broken or fixed we will see");
-                }
+
             }
         }
         public void recordLoop(){
