@@ -70,7 +70,7 @@ public class ForegroundService extends Service implements Runnable{
         try {
             AudioRecorder recorder = new AudioRecorder();
             recorder.startRecording();
-            recorder.stopRecording();
+            //recorder.stopRecording();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -155,8 +155,8 @@ public class ForegroundService extends Service implements Runnable{
             //Initialize the AudioRecorder variables
             recorder = new MediaRecorder();
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_WB);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_WB);
+            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             recorder.setAudioSamplingRate(44100);
             recorder.setAudioChannels(AudioFormat.ENCODING_DEFAULT);  //Doesn't crash program when set to DEFAUKT
             recorder.setAudioEncodingBitRate(AudioFormat.ENCODING_MP3);
@@ -187,10 +187,19 @@ public class ForegroundService extends Service implements Runnable{
 
         }
         public void stopRecording(){
-            recorder.stop();
-            recorder.reset();
-            recorder.release();
-            handler.removeCallbacks(callback);
+            if(null != recorder){
+                try{
+                    recorder.stop();
+                    recorder.reset();
+                    recorder.release();
+                    handler.removeCallbacks(callback);
+                } catch (RuntimeException e){
+                    System.out.println("Wow its broken or fixed we will see");
+                }
+            }
+        }
+        public void recordLoop(){
+
         }
     }
 }
