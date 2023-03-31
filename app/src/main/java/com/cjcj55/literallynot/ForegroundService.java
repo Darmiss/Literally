@@ -18,8 +18,10 @@ import android.os.IBinder;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+
 import java.util.concurrent.TimeUnit;
 
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 import java.io.ByteArrayOutputStream;
@@ -29,7 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class ForegroundService extends Service implements Runnable{
+public class ForegroundService extends Service implements Runnable {
 
     private static final int NOTIFICATION_ID = 1;
 
@@ -50,6 +52,7 @@ public class ForegroundService extends Service implements Runnable{
             // Start the foreground service with the notification
             startForeground(1001, notification.build());
         }
+
         // Do your work here, such as recording audio
         SpeechRecognizer speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         final Intent spIntent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -57,7 +60,7 @@ public class ForegroundService extends Service implements Runnable{
         spIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         spIntent.putExtra(RecognizerIntent.EXTRA_CALLING_PACKAGE, this.getPackageName());
 
-        //Initializes the MediaRecorder for audio recording
+        //Initializes the  for audio recording
         PackageManager m = getPackageManager();
         String s = getPackageName();
         PackageInfo p = null;
@@ -71,13 +74,42 @@ public class ForegroundService extends Service implements Runnable{
         System.out.println(m);
         System.out.println(p);
 
-        AudioRecorder recorder = new AudioRecorder();
-        try {
-            recorder.startRecording();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            boolean x = true;
         }
-        recorder.stopRecording();
+        int bufferSize = AudioRecord.getMinBufferSize(44100,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT);
+        byte[] audioData = new byte[bufferSize];
+        //Initializes the AudioRecord to work
+        AudioRecord recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
+                44100,
+                AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT,
+                bufferSize);
+
+        Thread recordingThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //Checks if its initialized or not and if it can run
+                if(recorder.getState() != AudioRecord.STATE_INITIALIZED){
+                    System.out.println("Not Initialized");
+                    return;
+                }
+                recorder.startRecording();
+
+                while(!Thread.interrupted()){
+                    int read = recorder.read(audioData, 0, bufferSize);
+                    if(read > 0){
+
+                    }
+                }
+            }
+        });
+        //Starts the recording MAKE SURE THIS DOES NOT STOP
+        recordingThread.start();
+
+        //Speech Recognizer Functions
         //speechRecognizer.startListening(spIntent);
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -148,59 +180,4 @@ public class ForegroundService extends Service implements Runnable{
 
     }
     //In order to get context for file location was required to
-    public class AudioRecorder{
-
-        private AudioRecord recorder;
-        private ByteArrayOutputStream output;
-        private Handler handler;
-        private Runnable callback;
-        //Constructor  for the Audio Recorder.  Thank you sleep deprivation
-        public AudioRecorder() {
-            //Initialize the AudioRecorder variables
-            recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, );
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            recorder.setAudioSamplingRate(44100);
-            recorder.setAudioChannels(AudioFormat.ENCODING_DEFAULT);  //Doesn't crash program when set to DEFAUKT
-            recorder.setAudioEncodingBitRate(AudioFormat.ENCODING_MP3);
-            //Create the output stream for the thing
-            output = new ByteArrayOutputStream();
-            handler = new Handler();
-
-        }
-
-        public void startRecording() throws IOException{
-            //outputFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording_" + System.currentTimeMillis() + ".mp3");
-            //If we can get setOutputFile Working this will be completed
-            String audioFileName = "myaudiofile.mp3";
-            File outputFile = new File(getCacheDir(), audioFileName);
-            recorder.setOutputFile(outputFile.getAbsolutePath());
-            recorder.prepare();
-            recorder.start();
-            callback = new Runnable() {
-                @Override
-                public void run() {
-                    byte[] recordBytes = output.toByteArray();
-                    String recordedText = new String(recordBytes, StandardCharsets.UTF_8);
-                    System.out.println(recordedText);
-                    handler.postDelayed(this, 50000);
-                }
-            };
-            handler.postDelayed(callback, 50000);
-
-        }
-        public void stopRecording(){
-            if(null != recorder){
-                    recorder.stop();
-                    recorder.release();
-                    recorder = null;
-                    handler.removeCallbacks(callback);
-
-            }
-        }
-        public void recordLoop(){
-
-        }
-    }
 }
