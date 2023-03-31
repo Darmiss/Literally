@@ -77,6 +77,7 @@ public class ForegroundService extends Service implements Runnable{
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         recorder.stopRecording();
         //speechRecognizer.startListening(spIntent);
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
@@ -150,14 +151,14 @@ public class ForegroundService extends Service implements Runnable{
     //In order to get context for file location was required to
     public class AudioRecorder{
 
-        private AudioRecord recorder;
+        private MediaRecorder recorder;
         private ByteArrayOutputStream output;
         private Handler handler;
         private Runnable callback;
         //Constructor  for the Audio Recorder.  Thank you sleep deprivation
         public AudioRecorder() {
             //Initialize the AudioRecorder variables
-            recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, );
+            recorder = new MediaRecorder();
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -184,10 +185,10 @@ public class ForegroundService extends Service implements Runnable{
                     byte[] recordBytes = output.toByteArray();
                     String recordedText = new String(recordBytes, StandardCharsets.UTF_8);
                     System.out.println(recordedText);
-                    handler.postDelayed(this, 50000);
+                    //handler.postDelayed(this, 5000);
                 }
             };
-            handler.postDelayed(callback, 50000);
+            //handler.postDelayed(callback, 5000);
 
         }
         public void stopRecording(){
