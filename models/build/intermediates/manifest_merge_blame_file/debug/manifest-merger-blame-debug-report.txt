@@ -3,6 +3,6 @@
 3    package="org.vosk.models" >
 4
 5    <uses-sdk android:minSdkVersion="21" />
-5-->C:\Users\Lucas\Documents\GitHub\Literally\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest16231682270988142709.xml
+5-->C:\Users\luigi\StudioProjects\Literally\models\build\intermediates\tmp\ProcessLibraryManifest\debug\tempAndroidManifest16704637625095738798.xml
 6
 7</manifest>

@@ -9,4 +9,6 @@
     <string name="previous">Previous</string>
     <string name="facebook_app_id">228862266326711</string>
     <string name="facebook_client_token">576b8be43c501170d7ff459b3468245e</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

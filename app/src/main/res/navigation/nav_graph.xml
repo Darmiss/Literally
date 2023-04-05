@@ -29,6 +29,9 @@
         <action
             android:id="@+id/action_MainScreen_to_ReportScreen"
             app:destination="@id/ReportScreen" />
+        <action
+            android:id="@+id/action_MainScreen_to_profileScreen"
+            app:destination="@id/profileScreen" />
     </fragment>
 
     <fragment
@@ -54,4 +57,9 @@
     <action
         android:id="@+id/action_logout_to_LoginScreen"
         app:destination="@id/LoginScreen" />
+    <fragment
+        android:id="@+id/profileScreen"
+        android:name="com.cjcj55.literallynot.ProfileScreen"
+        android:label="fragment_profile_screen"
+        tools:layout="@layout/fragment_profile_screen" />
 </navigation>
