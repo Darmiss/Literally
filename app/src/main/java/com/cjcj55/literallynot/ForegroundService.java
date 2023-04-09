@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
@@ -45,6 +46,12 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.ShortBuffer;
 import java.util.Arrays;
+import java.util.List;
+
+import edu.cmu.pocketsphinx.Config;
+import edu.cmu.pocketsphinx.Decoder;
+import edu.cmu.pocketsphinx.Segment;
+import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
 public class ForegroundService extends Service {
 
@@ -74,7 +81,7 @@ public class ForegroundService extends Service {
 
 
         // Initialize the Vosk model
-        Model model = ModelManager.getInstance().getModel();
+        /*Model model = ModelManager.getInstance().getModel();
         if (model != null) {
             // use the model
             mModel = model;
@@ -82,7 +89,7 @@ public class ForegroundService extends Service {
             // handle error
             System.out.println("No model loaded..?");
         }
-
+*/
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             // TODO: Consider calling
@@ -95,14 +102,12 @@ public class ForegroundService extends Service {
             return;
         }
             //UNCOMMENT@@@ THIS TO START SPEECH PROCESS 98-104, 122-123
-      /*@@@ mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE);
+      mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE);
         mAudioBuffer = new CircularByteBuffer(BUFFER_SIZE);
         mSpeechRecognizer = SpeechRecognizer.createSpeechRecognizer(this);
         mHandlerThread = new HandlerThread(TAG);
         mHandlerThread.start();
         mHandler = new Handler(mHandlerThread.getLooper());
-        @@@
-       */
     }
 
     @Override
@@ -119,8 +124,8 @@ public class ForegroundService extends Service {
             // Start the foreground service with the notification
             startForeground(1001, notification.build());
         }
-      //@@@  mAudioRecord.startRecording();
-      //@@@  mHandler.post(new AudioReader());
+       mAudioRecord.startRecording();
+       mHandler.post(new AudioReader());
         return START_STICKY;
     }
 
@@ -175,77 +180,74 @@ public class ForegroundService extends Service {
                 Uri notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                 Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), notificationSound);
                 ringtone.play();
-               // mSavedAudioData=mAudioData;
-               // long keywordTimestamp = getTimestampForKeyword(text, KEYWORD);
-              //  System.out.println("TESTINGMAIN1" + keywordTimestamp);
-              //  byte[] keywordAudioData = getAudioDataForTimestamp(keywordTimestamp);
-              //  System.out.println("TESTINGMAIN2" + keywordAudioData.length);
+                // mSavedAudioData=mAudioData;
+                // long keywordTimestamp = getTimestampForKeyword(text, KEYWORD);
+                //  System.out.println("TESTINGMAIN1" + keywordTimestamp);
+                //  byte[] keywordAudioData = getAudioDataForTimestamp(keywordTimestamp);
+                //  System.out.println("TESTINGMAIN2" + keywordAudioData.length);
                 saveAudioToFile(mAudioData, getOutputFilePath());
             }
         }
 
         public String recognizeSpeech(byte[] audioData) {
-            System.out.println("AUDIODATA RECIEVED FOR SPEECH");
-            StringBuilder result = new StringBuilder();
-            System.out.println(audioData.length);
-            try (final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(audioData)) {
-                final Recognizer rec = new Recognizer(mModel, SAMPLE_RATE);
-                final BufferedInputStream bis = new BufferedInputStream(byteArrayInputStream);
-                final byte[] buff = new byte[4096];
+            Config c = Decoder.defaultConfig();
+            c.setString("-hmm", "../../model/en-us/en-us");
+            c.setString("-lm", "../../model/en-us/en-us.lm.dmp");
+            c.setString("-dict", "../../model/en-us/cmudict-en-us.dict");
+            Decoder d = new Decoder(c);
 
-                int len;
-                while ((len = bis.read(buff)) != -1) {
-                    if (rec.acceptWaveForm(buff, len)) {
-                        final var res = rec.getFinalResult();
-                        //??>>getFinalResult() OR getResult() OR getPartialResults()
-                        if (res != null) {
-                            result.append(res.toLowerCase()).append(" ");
-                        }
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            d.startUtt();
+            ByteBuffer bb = ByteBuffer.wrap(audioData);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            short[] s = new short[audioData.length / 2];
+            bb.asShortBuffer().get(s);
+            d.startUtt();
+            d.processRaw(s, s.length, false, false);
+            d.endUtt();
+            StringBuilder transcriptBuilder = new StringBuilder();
+            for (Segment seg : d.seg()) {
+                transcriptBuilder.append(seg.getWord()).append(" ");
             }
-            System.out.println("VOICE RESULT: " + result.toString().trim());
-            return result.toString().trim();
+            String transcript = transcriptBuilder.toString().trim();
+            return transcript;
         }
-}
 
-    private void saveAudioToFile(byte[] audioData, String filePath) {
-        System.out.println("audiodata" + audioData.length);
-        int sampleRate = 44100; // audio sample rate
-        int bitRate = 128; // output MP3 bit rate
-        try {
-            FileOutputStream fos = new FileOutputStream(filePath);
-            AndroidLame androidLame = new LameBuilder()
-                    .setInSampleRate(sampleRate)
-                    .setOutChannels(1)
-                    .setOutBitrate(bitRate)
-                    .setOutSampleRate(sampleRate)
-                    .build();
-            // convert the audio data from byte[] to short[]
-            short[] audioShorts = new short[audioData.length / 2];
-            ByteBuffer.wrap(audioData).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(audioShorts);
-            byte[] mp3Buffer = new byte[audioData.length];
-            // encode the audio data to MP3 format using TAndroidLame
-            int encodedBytes = androidLame.encode(audioShorts, audioShorts, audioShorts.length, mp3Buffer);
-            // finalize the encoding process
-            androidLame.close();
-            // write the encoded MP3 data to file
-            System.out.println("Finish saving audio");
-            fos.write(mp3Buffer, 0, encodedBytes);
-            fos.close();
-        } catch (Exception e) {
-            Log.e(TAG, "Error saving audio to file: " + e.getMessage());
+        private void saveAudioToFile(byte[] audioData, String filePath) {
+            System.out.println("audiodata" + audioData.length);
+            int sampleRate = 44100; // audio sample rate
+            int bitRate = 128; // output MP3 bit rate
+            try {
+                FileOutputStream fos = new FileOutputStream(filePath);
+                AndroidLame androidLame = new LameBuilder()
+                        .setInSampleRate(sampleRate)
+                        .setOutChannels(1)
+                        .setOutBitrate(bitRate)
+                        .setOutSampleRate(sampleRate)
+                        .build();
+                // convert the audio data from byte[] to short[]
+                short[] audioShorts = new short[audioData.length / 2];
+                ByteBuffer.wrap(audioData).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(audioShorts);
+                byte[] mp3Buffer = new byte[audioData.length];
+                // encode the audio data to MP3 format using TAndroidLame
+                int encodedBytes = androidLame.encode(audioShorts, audioShorts, audioShorts.length, mp3Buffer);
+                // finalize the encoding process
+                androidLame.close();
+                // write the encoded MP3 data to file
+                System.out.println("Finish saving audio");
+                fos.write(mp3Buffer, 0, encodedBytes);
+                fos.close();
+            } catch (Exception e) {
+                Log.e(TAG, "Error saving audio to file: " + e.getMessage());
+            }
         }
-    }
-    private String getOutputFilePath() {
-        System.out.println("getting outputfile path");
-        File dir = getCacheDir();
-        return new File(dir, "recorded_audio_" + System.currentTimeMillis() + ".mp3").getAbsolutePath();
-    }
 
+        private String getOutputFilePath() {
+            System.out.println("getting outputfile path");
+            File dir = getCacheDir();
+            return new File(dir, "recorded_audio_" + System.currentTimeMillis() + ".mp3").getAbsolutePath();
+        }
 
+    }
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {

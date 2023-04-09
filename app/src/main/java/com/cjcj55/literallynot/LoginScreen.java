@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import edu.cmu.pocketsphinx.SpeechRecognizer;
+import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
+
 public class LoginScreen extends Fragment {
 
     private LoginscreenuiBinding binding;
@@ -53,7 +56,7 @@ public class LoginScreen extends Fragment {
         editPassword = binding.editTextTextPassword;
 
 
-        ModelManager.getInstance().initModel(requireContext(), new ModelManager.Callback() {
+     ModelManager.getInstance().initModel(requireContext(), new ModelManager.Callback() {
             @Override
             public void onSuccess() {
                 System.out.println("models finished loading!");
