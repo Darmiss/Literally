@@ -3,10 +3,12 @@ package com.cjcj55.literallynot;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,9 +19,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+import android.content.Context;
 
 
 import com.cjcj55.literallynot.databinding.LoginscreenuiBinding;
+import com.cjcj55.literallynot.databinding.MainscreenuiBinding;
 import com.cjcj55.literallynot.db.AudioUploadCallback;
 import com.cjcj55.literallynot.db.LoginCallback;
 import com.cjcj55.literallynot.db.MySQLHelper;
@@ -35,17 +39,21 @@ public class LoginScreen extends Fragment {
     private LoginscreenuiBinding binding;
     private EditText editUserNameOrEmail;
     private EditText editPassword;
+    public int launchprior;
+
 
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
+
+
 
         binding = LoginscreenuiBinding.inflate(inflater, container, false);
         return binding.getRoot();
 
-    }
+
+
+     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -65,13 +73,19 @@ public class LoginScreen extends Fragment {
         binding.LoginBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                if (checkInputs(getUsernameOrEmail(), getPassword(), view)) {
+ //               if (checkInputs(getUsernameOrEmail(), getPassword(), view)) {
 //                    MySQLHelper.login(getUsernameOrEmail(), getPassword(), getContext(), getActivity(), new LoginCallback() {
                     MySQLHelper.login("cjcj55", "password", getContext(), getActivity(), new LoginCallback() {
                         @Override
                         public void onSuccess(int userId, String username, String firstName, String lastName) {
+                            launchprior = 1;
                             NavHostFragment.findNavController(LoginScreen.this)
                                     .navigate(R.id.action_LoginScreen_to_MainScreen);
+                            System.out.println(launchprior);
+                            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putBoolean("isLoggedIn", true); // set isLoggedIn as true
+                            editor.commit(); // commit the changes
                         }
 
                         @Override

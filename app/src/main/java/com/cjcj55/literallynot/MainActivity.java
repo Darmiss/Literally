@@ -1,11 +1,14 @@
 package com.cjcj55.literallynot;
 
+import static androidx.core.content.ContentProviderCompat.requireContext;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.media.AudioAttributes;
 import android.net.Uri;
@@ -20,6 +23,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
@@ -41,11 +45,24 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private static final int PERMISSION_REQUEST_CODE = 1369420;
     private static boolean CAN_MODIFY_STORAGE = false;
+    LoginScreen launch = new LoginScreen();
 
+    public int loginstuff;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        boolean isLoggedIn = SharedPreferencesManager.getLoginState(MainActivity.this, false); // default value is false
+
+// Check if user is logged in
+        if (isLoggedIn == false) {
+            // Redirect to MainScreen.java
+
+           startActivity(new Intent(MainActivity.this, LoginScreen.class));
+        }
+        System.out.println(loginstuff);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -221,5 +238,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
 
 }
