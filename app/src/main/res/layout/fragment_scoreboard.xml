@@ -23,12 +23,12 @@
 
     <TextView
         android:id="@+id/pos4"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="407dp"
+        android:layout_height="34dp"
         android:fontFamily="@font/contb"
+        android:gravity="center"
         android:text="Loser!"
         android:textSize="20sp"
-        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/pos5"
         app:layout_constraintEnd_toEndOf="@+id/pos5"
         app:layout_constraintStart_toStartOf="@+id/pos5"
@@ -36,12 +36,12 @@
 
     <TextView
         android:id="@+id/pos5"
-        android:layout_width="200dp"
-        android:layout_height="0dp"
+        android:layout_width="405dp"
+        android:layout_height="33dp"
         android:fontFamily="@font/contb"
+        android:gravity="center"
         android:text="Loser!"
         android:textSize="20sp"
-        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/pos6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -49,12 +49,12 @@
 
     <TextView
         android:id="@+id/pos6"
-        android:layout_width="106dp"
-        android:layout_height="0dp"
+        android:layout_width="407dp"
+        android:layout_height="35dp"
         android:fontFamily="@font/contb"
+        android:gravity="center"
         android:text="Loser!"
         android:textSize="15sp"
-        android:gravity="center"
         app:layout_constraintBottom_toTopOf="@+id/pos7"
         app:layout_constraintEnd_toEndOf="@+id/pos5"
         app:layout_constraintStart_toStartOf="@+id/pos5"

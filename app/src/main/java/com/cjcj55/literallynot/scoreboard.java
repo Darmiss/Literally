@@ -43,54 +43,56 @@ public class scoreboard extends Fragment {
             public void onSuccess(List<LBEntry> leaderboard) {
                 int length = leaderboard.size();
 
+
+
                 if (length >= 1) {
                     TextView textView1 = view.findViewById(R.id.pos1);
-                    textView1.setText(leaderboard.get(0).toString());
+                    textView1.setText((leaderboard.get(0)).getName() + " " + (leaderboard.get(0)).getNumFiles());
                 }
 
                 if (length >= 2) {
                     TextView textView2 = view.findViewById(R.id.pos2);
-                    textView2.setText(leaderboard.get(1).toString());
+                    textView2.setText((leaderboard.get(1)).getName() + " " + (leaderboard.get(1)).getNumFiles());
                 }
 
                 if (length >= 3) {
                     TextView textView3 = view.findViewById(R.id.pos3);
-                    textView3.setText(leaderboard.get(2).toString());
+                    textView3.setText((leaderboard.get(2)).getName() + " " + (leaderboard.get(2)).getNumFiles());
                 }
 
                 if (length >= 4) {
                     TextView textView4 = view.findViewById(R.id.pos4);
-                    textView4.setText(leaderboard.get(3).toString());
+                    textView4.setText((leaderboard.get(3)).getName() + " " + (leaderboard.get(3)).getNumFiles());
                 }
 
                 if (length >= 5) {
                     TextView textView5 = view.findViewById(R.id.pos5);
-                    textView5.setText(leaderboard.get(4).toString());
+                    textView5.setText((leaderboard.get(4)).getName() + " " + (leaderboard.get(4)).getNumFiles());
                 }
 
                 if (length >= 6) {
                     TextView textView6 = view.findViewById(R.id.pos6);
-                    textView6.setText(leaderboard.get(5).toString());
+                    textView6.setText((leaderboard.get(5)).getName() + " " + (leaderboard.get(5)).getNumFiles());
                 }
 
                 if (length >= 7) {
                     TextView textView7 = view.findViewById(R.id.pos7);
-                    textView7.setText(leaderboard.get(6).toString());
+                    textView7.setText((leaderboard.get(6)).getName() + " " + (leaderboard.get(6)).getNumFiles());
                 }
 
                 if (length >= 8) {
                     TextView textView8 = view.findViewById(R.id.pos8);
-                    textView8.setText(leaderboard.get(7).toString());
+                    textView8.setText((leaderboard.get(7)).getName() + " " + (leaderboard.get(7)).getNumFiles());
                 }
 
                 if (length >= 9) {
                     TextView textView9 = view.findViewById(R.id.pos9);
-                    textView9.setText(leaderboard.get(8).toString());
+                    textView9.setText((leaderboard.get(8)).getName() + " " + (leaderboard.get(8)).getNumFiles());
                 }
 
                 if (length >= 10) {
                     TextView textView10 = view.findViewById(R.id.pos10);
-                    textView10.setText(leaderboard.get(9).toString());
+                    textView10.setText((leaderboard.get(9)).getName() + " " + (leaderboard.get(9)).getNumFiles());
                 }
             }
 

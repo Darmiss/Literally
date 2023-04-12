@@ -22,4 +22,12 @@ public class LBEntry {
     public String toString() {
         return this.numFiles + ", " + this.userId + ", " + this.username + ", " + this.firstName + ", " + this.lastName;
     }
+
+    public int getNumFiles(){
+        return this.numFiles;
+    }
+
+    public String getName(){
+        return this.username;
+    }
 }
