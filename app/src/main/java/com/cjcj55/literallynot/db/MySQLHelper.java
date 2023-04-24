@@ -4,14 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
-import android.util.LruCache;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -30,38 +25,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.cjcj55.literallynot.R;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.BinaryHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Type;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,15 +45,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.entity.mime.content.ByteArrayBody;
-import cz.msebera.android.httpclient.entity.mime.content.FileBody;
-import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -261,9 +230,10 @@ public class MySQLHelper {
         queue.add(stringRequest);
     }
 
-    public static void writeAudioFile(Context context, File file, String text) {
+    public static void writeAudioFile(Context context, File file, String text, String location) {
         SharedPreferences sharedPreferences = context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE);
         String userId = String.valueOf(sharedPreferences.getInt("user_id", -1));
+
 
         String baseUrl = API_URL + "write-audio-file.php/";
 
@@ -280,15 +250,15 @@ public class MySQLHelper {
 
         RequestBody userIdPart = RequestBody.create(MediaType.parse("text/plain"), userId);
         RequestBody textPart = RequestBody.create(MediaType.parse("text/plain"), text);
+        RequestBody locationPart = RequestBody.create(MediaType.parse("text/plain"), location);
 
-        Call<ResponseBody> call = apiInterface.uploadAudio(filePart, userIdPart, textPart);
+        Call<ResponseBody> call = apiInterface.uploadAudio(filePart, userIdPart, textPart, locationPart);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
                 // Handle the response here
                 System.out.println(file.getName() + " has been successfully uploaded!");
                 System.out.println("Response message: " + response.message());
-
             }
 
             @Override
@@ -298,7 +268,107 @@ public class MySQLHelper {
                 System.out.println("Error message: " + t.getMessage());
             }
         });
+    }
 
+    public static void updateAudioFile(Context context, String filePathName, String location) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE);
+        String userId = String.valueOf(sharedPreferences.getInt("user_id", -1));
+
+        String baseUrl = API_URL + "update-audio-file.php/";
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        ApiInterface apiInterface = retrofit.create(ApiInterface.class);
+
+        RequestBody userIdPart = RequestBody.create(MediaType.parse("text/plain"), userId);
+        RequestBody filePathNamePart = RequestBody.create(MediaType.parse("text/plain"), filePathName);
+        RequestBody locationPart = RequestBody.create(MediaType.parse("text/plain"), location);
+
+        Call<ResponseBody> call = apiInterface.updateAudio(userIdPart, filePathNamePart, locationPart);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
+                // Handle the response here
+                System.out.println(filePathName + " has been successfully updated with location!");
+                System.out.println("Response message: " + response.message());
+
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+                // Handle the failure here
+                System.out.println(filePathName + " has failed to update location");
+                System.out.println("Error message: " + t.getMessage());
+            }
+        });
+
+    }
+
+    public static void getWeekData(Activity activity, WeekDataCallback callback) {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences("myAppPrefs", Context.MODE_PRIVATE);
+        int userId = sharedPreferences.getInt("user_id", -1);
+
+        // Define the URL for the PHP file
+        String url = API_URL + "week-data.php?user_id=" + userId;
+
+        // Create a request queue for the network operations
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
+        // Create JSON request to retrieve time_said values for user
+        JsonArrayRequest jsonRequest = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        // Handle the JSON response
+                        try {
+                            Log.d("JSON Response", response.toString());
+
+                            List<String> datetimeList = new ArrayList<>();
+
+                            // Iterate over the JSON array and extract the data
+                            for (int i = 0; i < response.length(); i++) {
+                                String dateTime = response.getString(i);
+                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+                                Date date = sdf.parse(dateTime);
+                                String dateOnly = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date);
+                                datetimeList.add(dateOnly);
+                            }
+
+                            callback.onWeekDataReceived(datetimeList);
+
+                        } catch (JSONException e) {
+                            // Handle JSON parsing error
+                            e.printStackTrace();
+                        } catch (ParseException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        // Handle the error
+                        error.printStackTrace();
+                    }
+                })
+        {
+            @Override
+            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+                try {
+                    String jsonString = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                    return Response.success(new JSONArray(jsonString), HttpHeaderParser.parseCacheHeaders(response));
+                } catch (UnsupportedEncodingException | JSONException e) {
+                    return Response.error(new ParseError(e));
+                }
+            }
+        };
+
+
+        // Add the request to the queue
+        queue.add(jsonRequest);
     }
 
     public static void getWeekData(Activity activity, SwipeRefreshLayout swipeRefreshLayout, WeekDataCallback callback) {
@@ -404,6 +474,7 @@ public class MySQLHelper {
                                     String fileData = fileObject.getString("data");
                                     String timeSaid = fileObject.getString("time_said");
                                     String text = fileObject.getString("textsaid");
+                                    String location = fileObject.getString("location");
 
                                     // Decode the base64-encoded data into a byte array
                                     byte[] fileBytes = Base64.decode(fileData, Base64.DEFAULT);
@@ -421,7 +492,7 @@ public class MySQLHelper {
                                     outputStream.close();
 
                                     // Create a new AudioClip object
-                                    AudioClip audioClip = new AudioClip(file.getAbsolutePath(), timeSaid, text);
+                                    AudioClip audioClip = new AudioClip(file.getAbsolutePath(), timeSaid, text, location);
 
                                     // Add the AudioClip object to the list
                                     audioClips.add(audioClip);

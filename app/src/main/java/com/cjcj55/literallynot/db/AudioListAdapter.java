@@ -41,7 +41,8 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         // Set the title and time said on the TextViews
         holder.titleTextView.setText(audioClip.getTitle());
         holder.timeSaidTextView.setText(audioClip.getTimeSaid());
-
+        holder.locationTextView.setText(audioClip.getLocation());
+        holder.textSaidTextView.setText(audioClip.getTextSaid());
         // Set the click listener on the play button
         holder.playButton.setOnClickListener(view -> {
             if (mediaPlayer != null) {
@@ -81,11 +82,18 @@ public class AudioListAdapter extends RecyclerView.Adapter<AudioListAdapter.View
         public final TextView timeSaidTextView;
         public final Button playButton;
 
+        public final TextView locationTextView;
+
+        public final TextView textSaidTextView;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             titleTextView = itemView.findViewById(R.id.title_text_view);
             timeSaidTextView = itemView.findViewById(R.id.time_said_text_view);
             playButton = itemView.findViewById(R.id.play_button);
+            locationTextView = itemView.findViewById(R.id.location_text_view);
+            textSaidTextView = itemView.findViewById(R.id.text_said_text_view);
+
         }
     }
 }

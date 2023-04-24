@@ -23,6 +23,7 @@ if (!$result) {
         $filePath = $row['filepath'];
         $timeSaid = $row['time_said'];
         $text = $row['textsaid'];
+        $location = $row['location'];
 
         // Read the file data into a string
         $fileData = file_get_contents($filePath);
@@ -33,7 +34,8 @@ if (!$result) {
             'size' => filesize($filePath),
             'data' => base64_encode($fileData),
             'time_said' => $timeSaid,
-            'textsaid' => $text
+            'textsaid' => $text,
+            'location' => $location
         );
     }
 

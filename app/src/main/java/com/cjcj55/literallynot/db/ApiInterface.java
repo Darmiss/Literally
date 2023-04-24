@@ -16,5 +16,9 @@ import retrofit2.http.Query;
 public interface ApiInterface {
     @Multipart
     @POST("upload-audio")
-    Call<ResponseBody> uploadAudio(@Part MultipartBody.Part file, @Part("user_id") RequestBody userId, @Part("text") RequestBody text);
+    Call<ResponseBody> uploadAudio(@Part MultipartBody.Part file, @Part("user_id") RequestBody userId, @Part("text") RequestBody text, @Part("location") RequestBody location);
+
+    @Multipart
+    @POST("update-audio")
+    Call<ResponseBody> updateAudio(@Part("user_id") RequestBody userId, @Part("text") RequestBody filePathName, @Part("text") RequestBody location);
 }

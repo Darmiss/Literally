@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -40,6 +41,7 @@ public class ReportScreen extends Fragment {
     private ReportscreenuiBinding binding;
     private SwipeRefreshLayout swipeRefreshLayout;
     private LineChart lineChart;
+    private TextView statTextView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -51,6 +53,7 @@ public class ReportScreen extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        statTextView = getView().findViewById(R.id.statTextView);
         swipeRefreshLayout = getView().findViewById(R.id.swipeRefreshLayout);
         lineChart = getView().findViewById(R.id.lineChart);
         lineChart.getDescription().setEnabled(false);
@@ -168,6 +171,13 @@ public class ReportScreen extends Fragment {
         lineChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(daysOfWeek));
 
         lineChart.invalidate(); // refresh the chart
+
+        MySQLHelper.getWeekData(getActivity(), new WeekDataCallback() {
+            @Override
+            public void onWeekDataReceived(List<String> datetimeList) {
+                statTextView.setText("You have said 'Literally' a total of " + datetimeList.size() + " times!");
+            }
+        });
     }
 
 
