@@ -24,10 +24,11 @@ import com.facebook.FacebookSdk;
 import com.facebook.share.model.ShareHashtag;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareButton;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+
 
 public class MainScreen extends Fragment {
 
@@ -37,7 +38,7 @@ public class MainScreen extends Fragment {
     private boolean isServiceRunning;
     // Declare a SharedPreferences object
     private SharedPreferences sharedPref;
-
+    public static int fbnum2;
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container,
@@ -90,6 +91,7 @@ public class MainScreen extends Fragment {
 
         // Initialize the Facebook SDK
         FacebookSdk.sdkInitialize(getContext());
+        fbnum2 = MySQLHelper.fbnum;
 
 
 
@@ -119,8 +121,8 @@ public class MainScreen extends Fragment {
 
         // Create a ShareLinkContent object with the message and hashtag you want to share
         ShareLinkContent content = new ShareLinkContent.Builder()
-                .setContentUrl(Uri.parse("https://www.example.com"))
-                .setQuote("Check out this audio!")
+                .setContentUrl(Uri.parse("www.example.com"))
+                .setQuote("I said literally " + fbnum2 + " times all time")
                 .setShareHashtag(new ShareHashtag.Builder()
                         .setHashtag("#LiterallyNot")
                         .build())
@@ -142,13 +144,12 @@ public class MainScreen extends Fragment {
                 /// Disable the button
                 binding.fbButton.setEnabled(false);
 
-                // Share the message and hashtag
-                ShareHashtag hashtag = new ShareHashtag.Builder()
-                        .setHashtag("#yourhashtag")
-                        .build();
                 ShareLinkContent content = new ShareLinkContent.Builder()
-                        .setQuote("your message")
-                        .setShareHashtag(hashtag)
+                        .setContentUrl(Uri.parse("www.example.com"))
+                        .setQuote("I said literally " + fbnum2 + " times all time while using the 'LiterallyNot App'")
+                        .setShareHashtag(new ShareHashtag.Builder()
+                                .setHashtag("#LiterallyNot")
+                                .build())
                         .build();
                 ShareButton shareButton = new ShareButton(getContext());
                 shareButton.setShareContent(content);
