@@ -58,6 +58,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MySQLHelper {
     private static final String API_URL = "http://18.223.125.204/";
 
+    public static int fbnum;
+
     public static void registerAccount(String username, String password, String email, String firstName, String lastName, Context context) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 API_URL + "register.php",
@@ -496,6 +498,7 @@ public class MySQLHelper {
 
                                     // Add the AudioClip object to the list
                                     audioClips.add(audioClip);
+                                    fbnum = audioClips.size();
                                 }
                                 Log.d("AudioClips", "Number of audio clips: " + audioClips.size());
                             } catch (JSONException | IOException e) {

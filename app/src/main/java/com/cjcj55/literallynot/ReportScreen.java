@@ -1,6 +1,7 @@
 package com.cjcj55.literallynot;
 
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,10 @@ import com.android.volley.Response;
 import com.cjcj55.literallynot.databinding.ReportscreenuiBinding;
 import com.cjcj55.literallynot.db.MySQLHelper;
 import com.cjcj55.literallynot.db.WeekDataCallback;
+import com.facebook.FacebookSdk;
+import com.facebook.share.model.ShareHashtag;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareButton;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
@@ -42,6 +47,7 @@ public class ReportScreen extends Fragment {
     private SwipeRefreshLayout swipeRefreshLayout;
     private LineChart lineChart;
     private TextView statTextView;
+    public int totalsum;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -96,6 +102,26 @@ public class ReportScreen extends Fragment {
                         .navigate(R.id.action_ReportScreen_to_scoreboard);
             }
         });
+
+        // Get a reference to the ShareButton view
+        ShareButton shareButton = binding.fbButton;
+        binding.fbButton.setEnabled(true);
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ShareLinkContent content = new ShareLinkContent.Builder()
+                        .setContentUrl(Uri.parse("www.example.com"))
+                        .setQuote("I said literally " + totalsum + " times this week"  )
+                        .setShareHashtag(new ShareHashtag.Builder()
+                                .setHashtag("#" + totalsum + "times")
+                                .build())
+                        .build();
+                ShareButton shareButton = new ShareButton(getContext());
+                shareButton.setShareContent(content);
+                shareButton.performClick();
+            }
+        });
     }
 
     private void updateLineChart(List<String> datetimeList, SimpleDateFormat sdf) {
@@ -141,8 +167,9 @@ public class ReportScreen extends Fragment {
 
             // add a data point for the current day
             entries.add(new Entry(6 - i, sum));
+            totalsum = totalsum + sum;
         }
-
+        System.out.println("Totalsum = " + totalsum);
         // create a LineDataSet from the entries
         LineDataSet dataSet = new LineDataSet(entries, "Data Set");
 
