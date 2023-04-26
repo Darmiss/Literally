@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import android.media.AudioRecord;
 
 import com.cjcj55.literallynot.db.MySQLHelper;
